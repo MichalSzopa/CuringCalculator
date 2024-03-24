@@ -1,0 +1,88 @@
+﻿@page "/"
+@* form creation in progress, magic numbers and translations are going to be resolved later *@
+<div class="form">
+    <div class="mb-4">
+        Podaj ilość mięsa
+        <InputSelect @bind-Value="selectedMethodId">
+            @foreach (var method in methods)
+            {
+                <option value="@method.Id">@method.Name</option>
+            }
+        </InputSelect>
+    </div>
+
+    <div class="mb-4">
+        Podaj ilość mięsa [kg]
+        <input type="text" inputmode="numeric" @bind-value="meatAmount">
+    </div>
+
+    <div>
+        Podaj ilość dni
+        <input type="text" inputmode="numeric" @bind-value="days">
+    </div>
+</div>
+
+<div class="form">
+    <div class="mb-4">
+        Nastrzyk łącznie:
+        <span> @totalInjections [ml]</span>
+    </div>
+
+    <div>
+        Masowanie po nastrzyku:
+        <span> @massaging </span>
+    </div>
+
+    <div class="mb-4">
+        Peklosoli:
+        <span> @curingSaltAmount [g]</span>
+    </div>
+
+    <div class="mb-4">
+        Wody:
+        <span> @waterAmount [l]</span>
+    </div>
+</div>
+
+
+
+@code {
+    private List<Method> methods;
+    private int selectedMethodId;
+
+    private decimal meatAmount = 0;
+
+    private int days = 0;
+
+    private int injectionsPerKg = 4;
+
+    private int injectionSize = 60;
+
+    private decimal curingSaltGramsPerMeatKg = 80;
+
+    protected override Task OnInitializedAsync()
+    {
+        methods = new()
+        {
+            new Method { Id = 0, Name = "Dziadek", },
+            new Method { Id = 1, Name = "Dziadek modern", },
+            new Method { Id = 2, Name = "Szczepan", },
+        };
+        return Task.CompletedTask;
+    }
+
+    private int totalInjections { get => (int)(injectionsPerKg * injectionSize * meatAmount); }
+
+    private string massaging { get => days <= 0 ? "" : (days <= 3 ? "tak" : "nie"); }
+
+    private decimal waterAmount { get => meatAmount * (decimal)0.4; }
+
+    private decimal curingSaltAmount { get => curingSaltGramsPerMeatKg * meatAmount; }
+
+    private class Method
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; }
+    }
+}
