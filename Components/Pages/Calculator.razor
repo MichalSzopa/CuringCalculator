@@ -1,9 +1,10 @@
 ﻿@page "/"
 @* form creation in progress, magic numbers and translations are going to be resolved later *@
-<div class="form">
+<div class="form mb-4">
     <div class="mb-4">
-        Podaj ilość mięsa
+        Wybierz metodę
         <InputSelect @bind-Value="selectedMethodId">
+            <option value ="0">Wybierz</option>
             @foreach (var method in methods)
             {
                 <option value="@method.Id">@method.Name</option>
@@ -11,78 +12,133 @@
         </InputSelect>
     </div>
 
-    <div class="mb-4">
-        Podaj ilość mięsa [kg]
-        <input type="text" inputmode="numeric" @bind-value="meatAmount">
-    </div>
+    @if (selectedMethod != null)
+    {
+        <div class="mb-4">
+            Podaj ilość dni
+            <InputSelect @bind-Value="selectedDaysIntervalId">
+                <option value="0">Wybierz</option>
+                @foreach (var interval in selectedMethod.Intervals)
+                {
+                    <option value="@interval.Id">@interval.DisplayedValue</option>
+                }
+            </InputSelect>
+        </div>
 
-    <div>
-        Podaj ilość dni
-        <input type="text" inputmode="numeric" @bind-value="days">
-    </div>
+        @if (selectedInterval != null)
+        {
+            <div>
+                Podaj ilość mięsa [kg]
+                <input type="text" inputmode="numeric" @bind-value="meatAmount">
+            </div>
+        }
+    }
+
 </div>
 
-<div class="form">
-    <div class="mb-4">
-        Nastrzyk łącznie:
-        <span> @totalInjections [ml]</span>
+@if (selectedMethod != null && selectedInterval != null && meatAmount > 0)
+{
+    <div class="form">
+        <div>
+            Nastrzyk łącznie:
+            <span> @totalInjections [ml]</span>
+        </div>
+
+        <div>
+            Masowanie po nastrzyku:
+            <span> @massaging </span>
+        </div>
+
+        <div>
+            Peklosoli:
+            <span> @minCuringSaltAmount - @maxCuringSaltAmount [g]</span>
+        </div>
+
+        <div>
+            Wody:
+            <span> @waterAmount [l]</span>
+        </div>
+
+        <div>
+            Cukru opcjonalnie:
+            <span> @sugarMin - @sugarMax [g]</span>
+        </div>
     </div>
-
-    <div>
-        Masowanie po nastrzyku:
-        <span> @massaging </span>
-    </div>
-
-    <div class="mb-4">
-        Peklosoli:
-        <span> @curingSaltAmount [g]</span>
-    </div>
-
-    <div class="mb-4">
-        Wody:
-        <span> @waterAmount [l]</span>
-    </div>
-</div>
-
-
+}
 
 @code {
-    private List<Method> methods;
-    private int selectedMethodId;
+    public List<Method>? methods;
 
-    private decimal meatAmount = 0;
+    public int? selectedMethodId = 0;
 
-    private int days = 0;
+    public Method? selectedMethod { get => methods == null ? null : methods.Where(m => m.Id == selectedMethodId).FirstOrDefault(); }
 
-    private int injectionsPerKg = 4;
+    public int? selectedDaysIntervalId = 0;
 
-    private int injectionSize = 60;
+    public DaysInterval? selectedInterval { get => selectedMethod == null || selectedDaysIntervalId == 0 ? null : selectedMethod.Intervals.Where(i => i.Id == selectedDaysIntervalId).FirstOrDefault(); }
 
-    private decimal curingSaltGramsPerMeatKg = 80;
+    private DaysInterval? daysInterval = null;
 
     protected override Task OnInitializedAsync()
     {
-        methods = new()
-        {
-            new Method { Id = 0, Name = "Dziadek", },
-            new Method { Id = 1, Name = "Dziadek modern", },
-            new Method { Id = 2, Name = "Szczepan", },
-        };
+        // TODO methods initialization to separate files
+        var daysIntervals = new List<DaysInterval>();
+        daysIntervals.Add(new DaysInterval(1, 1, 1, 1.9m, 2.0m, true));
+        daysIntervals.Add(new DaysInterval(2, 2, 2, 1.75m, 1.85m, true));
+        daysIntervals.Add(new DaysInterval(3, 3, 3, 1.6m, 1.7m, true));
+        daysIntervals.Add(new DaysInterval(4, 4, 4, 1.5m, 1.55m, false));
+        daysIntervals.Add(new DaysInterval(5, 5, 5, 1.4m, 1.45m, false));
+        daysIntervals.Add(new DaysInterval(6, 6, 6, 1.3m, 1.35m, false));
+        daysIntervals.Add(new DaysInterval(7, 7, 7, 1.2m, 1.25m, false));
+        daysIntervals.Add(new DaysInterval(8, 8, 10, 1.1m, 1.15m, false));
+        daysIntervals.Add(new DaysInterval(9, 11, 13, 1m, 1.05m, false));
+        methods = new();
+        methods.Add(new Method(1, "Dziadek", daysIntervals));
         return Task.CompletedTask;
     }
 
-    private int totalInjections { get => (int)(injectionsPerKg * injectionSize * meatAmount); }
+    private decimal meatAmount = 0;
 
-    private string massaging { get => days <= 0 ? "" : (days <= 3 ? "tak" : "nie"); }
+    private int injectionsPerKg = 4;
 
-    private decimal waterAmount { get => meatAmount * (decimal)0.4; }
+    private int injectionSize = 60; // [ml] // TODO injections calculation
 
-    private decimal curingSaltAmount { get => curingSaltGramsPerMeatKg * meatAmount; }
+    private decimal curingSaltGramsPerMeatBase = 40; // [g]
 
-    private class Method
+    private int totalInjections { get => (int)(injectionsPerKg * injectionSize * meatAmount); } // [ml]
+
+    private decimal waterAmount { get => meatAmount * 0.4m; } // [l]
+
+    private decimal minCuringSaltAmount { get => selectedInterval == null ? 0m : curingSaltGramsPerMeatBase * meatAmount * selectedInterval.MinSalt; } // [g]
+
+    private decimal maxCuringSaltAmount { get => selectedInterval == null ? 0m : curingSaltGramsPerMeatBase * meatAmount * selectedInterval.MaxSalt; } // [g]
+
+    private decimal sugarMin { get => 0.01m * (waterAmount * 1000m + minCuringSaltAmount); } //[g]
+
+    private decimal sugarMax { get => 2m * sugarMin; } //[g]
+
+    private string massaging { get => selectedInterval == null ? "" : selectedInterval.Massaging ? "tak" : "nie"; }
+
+
+    public class Method(int id, string name, IEnumerable<DaysInterval> daysIntervals)
     {
-        public int Id { get; set; }
+        public int Id { get => id; }
 
-        public string Name { get; set; }
+        public string Name { get => name; }
+
+        public IEnumerable<DaysInterval> Intervals { get => daysIntervals; }
+    }
+
+    public class DaysInterval(int id, int minDay, int maxDay, decimal minSalt, decimal maxSalt, bool massaging)
+    {
+        public string DisplayedValue { get => minDay==maxDay ? minDay.ToString() : string.Format("{0}-{1}", minDay, maxDay); }
+
+        public decimal MinSalt { get => minSalt; }
+
+        public decimal MaxSalt { get => maxSalt; }
+
+        public bool Massaging { get => massaging; }
+
+        public int Id { get => id; }
     }
 }
