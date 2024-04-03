@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using CuringCalculator.Data;
+using Microsoft.Extensions.Logging;
 
 namespace CuringCalculator
 {
@@ -15,6 +16,8 @@ namespace CuringCalculator
                 });
 
             builder.Services.AddMauiBlazorWebView();
+
+            builder.Services.AddSingleton<LocalDbService>();
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();
