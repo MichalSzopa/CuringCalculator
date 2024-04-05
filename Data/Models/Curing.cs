@@ -25,8 +25,7 @@ namespace CuringCalculator.Data.Models
         [Column("DaysIntervalId")]
         public int DaysIntervalId { get; set; }
 
-        public virtual DaysInterval DaysInterval { get; set; }
-
-        public Curing() { }
+        public Curing()
+        { }
     }
 }

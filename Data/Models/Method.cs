@@ -13,22 +13,12 @@ public class Method
     [Column("Name")]
     public string Name { get; set; }
 
-    public virtual IEnumerable<DaysInterval>? DaysIntervals { get; set; }
-
-    public virtual IEnumerable<Curing>? Curings { get; set; }
-
-    public Method(int id, string name, IEnumerable<DaysInterval> daysIntervals)
-    {
-        Id = id;
-        Name = name;
-        DaysIntervals = daysIntervals;
-    }
-
     public Method(int id, string name)
     {
         Id = id;
         Name = name;
     }
 
-    public Method() { }
+    public Method()
+    { }
 }

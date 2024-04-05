@@ -4,15 +4,18 @@
 
 @inject LocalDbService localDbService
 
-@* magic numbers and translations are going to be resolved later *@
+@* translations are going to be resolved later *@
 <div class="form mb-4">
     <div class="mb-4">
         Wybierz metodę
         <InputSelect @bind-Value="selectedMethodId">
             <option value ="0">Wybierz</option>
-            @foreach (var method in methods)
+            @if ( methods != null)
             {
-                <option value="@method.Id">@method.Name</option>
+                @foreach (var method in methods)
+                {
+                    <option value="@method.Id">@method.Name</option>
+                }
             }
         </InputSelect>
     </div>
@@ -23,9 +26,12 @@
             Podaj ilość dni
             <InputSelect @bind-Value="selectedDaysIntervalId">
                 <option value="0">Wybierz</option>
-                @foreach (var interval in selectedMethod.DaysIntervals)
+                @if (daysIntervalsForMethod != null)
                 {
-                    <option value="@interval.Id">@interval.DisplayedValue</option>
+                    @foreach (var interval in daysIntervalsForMethod)
+                    {
+                        <option value="@interval.Id">@interval.DisplayedValue</option>
+                    }
                 }
             </InputSelect>
         </div>
@@ -77,7 +83,11 @@
 
     int? selectedDaysIntervalId = 0;
 
-    DaysInterval? selectedInterval { get => selectedMethod == null || selectedDaysIntervalId == 0 ? null : selectedMethod.DaysIntervals.Where(i => i.Id == selectedDaysIntervalId).FirstOrDefault(); }
+    IEnumerable<DaysInterval>? daysIntervals = null;
+
+    IEnumerable<DaysInterval>? daysIntervalsForMethod { get => selectedMethodId == 0 ? null : daysIntervals.Where(di => di.MethodId == selectedMethodId.Value).ToList(); }
+
+    DaysInterval? selectedInterval { get => selectedMethod == null || selectedDaysIntervalId == 0 ? null : daysIntervalsForMethod.Where(i => i.Id == selectedDaysIntervalId).FirstOrDefault(); }
 
     decimal meatAmount = 0;
 
@@ -85,6 +95,7 @@
     protected override async Task OnInitializedAsync()
     {
         methods = await localDbService.GetMethods();
+        daysIntervals = await localDbService.GetIntervals();
     }
 
     // Displayed values

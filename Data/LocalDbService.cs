@@ -17,15 +17,13 @@ public class LocalDbService
         // enable multi-threaded database access
         SQLiteOpenFlags.SharedCache;
 
-    SQLiteAsyncConnection connection;
-
+    private SQLiteAsyncConnection connection;
 
     public LocalDbService()
     {
-
     }
 
-    async Task Init()
+    private async Task Init()
     {
         if (connection is not null)
             return;
@@ -33,38 +31,41 @@ public class LocalDbService
         {
             connection = new SQLiteAsyncConnection(DatabasePath, Flags);
         }
-        catch (Exception ex)
+        catch
         {
-            var jajo = ex.Message;
+            throw;
         }
-        
-        var result1 = await connection.CreateTableAsync<Curing>();
-        var result2 = await connection.CreateTableAsync<Method>();
-        var result3 = await connection.CreateTableAsync<DaysInterval>();
+
+        await connection.CreateTableAsync<Curing>();
+        await connection.CreateTableAsync<Method>();
+        await connection.CreateTableAsync<DaysInterval>();
 
         // seed
-        var daysIntervals = new List<DaysInterval>()
+        if (await connection.Table<Method>().CountAsync() == 0)
         {
-            new DaysInterval(1, 1, 1, 76, 80, true, 240, 1),
-            new DaysInterval(2, 2, 2, 70, 74, true, 240, 1),
-            new DaysInterval(3, 3, 3, 64, 68, true, 180, 1),
-            new DaysInterval(4, 4, 4, 60, 62, false, 90, 1),
-            new DaysInterval(5, 5, 5, 56, 58, false, 60, 1),
-            new DaysInterval(6, 6, 6, 52, 54, false, 60, 1),
-            new DaysInterval(7, 7, 7, 48, 50, false, 60, 1),
-            new DaysInterval(8, 8, 10, 44, 46, false, 60, 1),
-            new DaysInterval(9, 11, 13, 40, 42, false, 60, 1)
-        };
+            var method = new Method(1, "Dziadek");
+            await connection.InsertAsync(method);
 
-        var method = new Method(1, "Dziadek");
-
-        await connection.InsertAsync(method);
-        await connection.InsertAsync(daysIntervals);
+            await connection.InsertAsync(new DaysInterval(1, 1, 1, 76, 80, true, 240, 1));
+            await connection.InsertAsync(new DaysInterval(2, 2, 2, 70, 74, true, 240, 1));
+            await connection.InsertAsync(new DaysInterval(3, 3, 3, 64, 68, true, 180, 1));
+            await connection.InsertAsync(new DaysInterval(4, 4, 4, 60, 62, false, 90, 1));
+            await connection.InsertAsync(new DaysInterval(5, 5, 5, 56, 58, false, 60, 1));
+            await connection.InsertAsync(new DaysInterval(6, 6, 6, 52, 54, false, 60, 1));
+            await connection.InsertAsync(new DaysInterval(7, 7, 7, 48, 50, false, 60, 1));
+            await connection.InsertAsync(new DaysInterval(8, 8, 10, 44, 46, false, 60, 1));
+            await connection.InsertAsync(new DaysInterval(9, 11, 13, 40, 42, false, 60, 1));
+        }
     }
 
     public async Task<IEnumerable<Method>> GetMethods()
     {
-        await Init();
+        await Init(); // TODO move to other place
         return await connection.Table<Method>().ToListAsync();
+    }
+
+    public async Task<IEnumerable<DaysInterval>> GetIntervals()
+    {
+        return await connection.Table<DaysInterval>().ToListAsync();
     }
 }

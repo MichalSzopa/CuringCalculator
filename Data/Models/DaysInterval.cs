@@ -33,10 +33,6 @@ public class DaysInterval
 
     public string DisplayedValue { get => MinDay == MaxDay ? MinDay.ToString() : string.Format("{0}-{1}", MinDay, MaxDay); }
 
-    public virtual Method? Method { get; set; }
-
-    public virtual IEnumerable<Curing>? Curings { get; set; }
-
     public DaysInterval(int id, int minDay, int maxDay, int minSalt, int maxSalt, bool massaging, int singleInjection, int methodId)
     {
         Id = id;
@@ -49,5 +45,6 @@ public class DaysInterval
         MethodId = methodId;
     }
 
-    public DaysInterval() { }
+    public DaysInterval()
+    { }
 }
