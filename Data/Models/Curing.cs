@@ -22,8 +22,17 @@ namespace CuringCalculator.Data.Models
         [Column("MeatAmount")]
         public decimal MeatAmount { get; set; }
 
-        [Column("DaysIntervalId")]
-        public int DaysIntervalId { get; set; }
+        [Column("SugarAmount")]
+        public decimal SugarAmount { get; set; }
+
+        [Column("SaltAmount")]
+        public decimal SaltAmount { get; set; }
+
+        [Column("Days")]
+        public int Days { get; set; }
+
+        [Column("MethodId")]
+        public int MethodId { get; set; }
 
         public Curing()
         { }

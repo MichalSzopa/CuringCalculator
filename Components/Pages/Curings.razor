@@ -1,0 +1,49 @@
+﻿@page "/curings"
+@using CuringCalculator.Data
+@using CuringCalculator.Data.Models
+@using CuringCalculator.Shared.Models
+
+@inject LocalDbService localDbService
+
+@* translations are going to be resolved later *@
+<h1>Peklowania</h1>
+
+@if(curings != null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Metoda</th>
+                <th>Początek</th>
+                <th>Koniec</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var curing in curings)
+            {
+                <tr @onclick="() => curing.IsRowExpanded = !curing.IsRowExpanded">
+                    <td>@curing.MethodName</td>
+                    <td>@curing.StartDate.ToShortDateString()</td>
+                    <td>@curing.EndDate.ToShortDateString()</td>
+                </tr>
+                if (curing.IsRowExpanded)
+                {
+                    <tr>Mięso: @curing.MeatAmount [kg]</tr>
+                    <tr>Sól: @curing.SaltAmount [g]</tr>
+                    <tr>Cukier: @curing.SugarAmount [g]</tr>
+                    <tr>Dni: @curing.Days</tr>
+                    <tr>Uwagi: @curing.Comments</tr>
+                }
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    List<CuringForListModel> curings { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        curings = await localDbService.GetCuringsForList();
+    }
+}

@@ -1,4 +1,5 @@
 ﻿using CuringCalculator.Data.Models;
+using CuringCalculator.Shared.Models;
 using SQLite;
 
 namespace CuringCalculator.Data;
@@ -67,5 +68,30 @@ public class LocalDbService
     public async Task<IEnumerable<DaysInterval>> GetIntervals()
     {
         return await connection.Table<DaysInterval>().ToListAsync();
+    }
+
+    public async Task<List<CuringForListModel>> GetCuringsForList()
+    {
+        var methods = await connection.Table<Method>().ToListAsync();
+        var curings = await connection.Table<Curing>().ToListAsync();
+
+        return curings.Select(c => new CuringForListModel(c, methods.Where(m => m.Id == c.MethodId).Select(m => m.Name).FirstOrDefault())).ToList();
+    }
+
+    public async Task AddCuring(AddCuringModel curing)
+    {
+        var curingToAdd = new Curing()
+        {
+            MethodId = curing.MethodId,
+            Days = curing.Days,
+            StartDate = curing.StartDate,
+            EndDate = curing.EndDate,
+            MeatAmount = curing.MeatAmount,
+            SaltAmount = curing.SaltAmount,
+            SugarAmount = curing.SugarAmount,
+            Comments = curing.Comments,
+        };
+
+        await connection.InsertAsync(curingToAdd);
     }
 }

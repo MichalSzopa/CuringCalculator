@@ -1,10 +1,13 @@
 ﻿@page "/"
 @using CuringCalculator.Data
 @using CuringCalculator.Data.Models
+@using CuringCalculator.Shared.Models
 
 @inject LocalDbService localDbService
 
 @* translations are going to be resolved later *@
+<h1>Kalkulator</h1>
+
 <div class="form mb-4">
     <div class="mb-4">
         Wybierz metodę
@@ -70,6 +73,50 @@
             <span>Masowanie po nastrzyku: @massaging </span>
         </div>
     </div>
+
+    @if (!curingAddingInProgress)
+    {
+        <button @onclick="switchAddingForm">
+            Dodaj peklowanie
+        </button>
+    }
+    
+
+    @if (curingAddingInProgress)
+    {
+        <div>
+            Podaj ilość dni
+            <input type="text" inputmode="numeric" @bind-value="days">
+        </div>
+
+        <div>
+            Podaj ilość soli
+            <input type="text" inputmode="numeric" @bind-value="saltAmount">
+        </div>
+
+        <div>
+            Podaj ilość cukru
+            <input type="text" inputmode="numeric" @bind-value="sugarAmount">
+        </div>
+
+        <div>
+            Uwagi
+            <input type="text" inputmode="text" @bind-value="comments">
+        </div>
+
+        <div>
+            Początek peklowania
+            <InputDate Type="InputDateType.Date" @bind-Value="@startDate" />
+        </div>
+
+        <button @onclick="addCuring">
+            Zapisz
+        </button>
+
+        <button @onclick="cancelAdding">
+            Anuluj
+        </button>
+    }
 }
 
 @code {
@@ -91,11 +138,56 @@
 
     decimal meatAmount = 0;
 
+    bool curingAddingInProgress = false;
+
+    decimal sugarAmount { get; set; }
+
+    decimal saltAmount { get; set; }
+
+    int days { get; set; }
+
+    string comments { get; set; }
+
+    DateTime startDate { get; set; }
+
     // Initialization
     protected override async Task OnInitializedAsync()
     {
         methods = await localDbService.GetMethods();
         daysIntervals = await localDbService.GetIntervals();
+    }
+
+    void switchAddingForm()
+    {
+        curingAddingInProgress = !curingAddingInProgress;
+        days = selectedInterval.MinDay;
+        startDate = DateTime.Now;
+        saltAmount = minCuringSaltAmount;
+        sugarAmount = sugarMin;
+        comments = string.Empty;
+    }
+
+    async Task addCuring()
+    {
+        var curingToAdd = new AddCuringModel()
+            {
+                MeatAmount = meatAmount,
+                SugarAmount = sugarAmount,
+                SaltAmount = saltAmount,
+                Days = days,
+                Comments = comments,
+                MethodId = selectedMethodId.Value,
+                StartDate = startDate,
+                EndDate = startDate + TimeSpan.FromDays(days),
+            };
+
+        await localDbService.AddCuring(curingToAdd);
+        curingAddingInProgress = false;
+    }
+
+    void cancelAdding()
+    {
+        curingAddingInProgress = false;
     }
 
     // Displayed values
