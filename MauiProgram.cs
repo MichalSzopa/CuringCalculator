@@ -1,4 +1,5 @@
-﻿using CuringCalculator.Data;
+﻿using CommunityToolkit.Maui;
+using CuringCalculator.Data;
 using Microsoft.Extensions.Logging;
 
 namespace CuringCalculator
@@ -10,9 +11,11 @@ namespace CuringCalculator
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
+                .UseMauiCommunityToolkit()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+                    fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
 
             builder.Services.AddMauiBlazorWebView();

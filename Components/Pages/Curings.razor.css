@@ -1,0 +1,11 @@
+.additional-data-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.additional-data-column {
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+}

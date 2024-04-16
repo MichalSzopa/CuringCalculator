@@ -1,17 +1,25 @@
 ﻿@page "/"
+@using CommunityToolkit.Maui.Core
 @using CuringCalculator.Data
 @using CuringCalculator.Data.Models
 @using CuringCalculator.Shared.Models
+@using CommunityToolkit.Maui.Alerts;
 
 @inject LocalDbService localDbService
 
 @* translations are going to be resolved later *@
+
+@* todo fix inline style, css class not working for predefined Blazor fields ????*@
 <h1>Kalkulator</h1>
 
-<div class="form mb-4">
-    <div class="mb-4">
+<div class="mb-2">
+    <div class="mb-2">
         Wybierz metodę
-        <InputSelect @bind-Value="selectedMethodId">
+        <InputSelect style="padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 7px;
+    background-color: #f8f8f8;
+    font-size: 14px;" @bind-Value="selectedMethodId">
             <option value ="0">Wybierz</option>
             @if ( methods != null)
             {
@@ -25,9 +33,13 @@
 
     @if (selectedMethod != null)
     {
-        <div class="mb-4">
+        <div class="mb-2">
             Podaj ilość dni
-            <InputSelect @bind-Value="selectedDaysIntervalId">
+            <InputSelect style="padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 7px;
+    background-color: #f8f8f8;
+    font-size: 14px;" @bind-Value="selectedDaysIntervalId">
                 <option value="0">Wybierz</option>
                 @if (daysIntervalsForMethod != null)
                 {
@@ -43,7 +55,7 @@
         {
             <div>
                 Podaj ilość mięsa [kg]
-                <input type="text" inputmode="numeric" @bind-value="meatAmount">
+                <input style="width: 50%" type="text" inputmode="numeric" @bind-value="meatAmount" class="form-input">
             </div>
         }
     }
@@ -52,7 +64,7 @@
 
 @if (selectedMethod != null && selectedInterval != null && meatAmount > 0)
 {
-    <div class="form">
+    <div class="form mt-1">
         <div>
             <span>Peklosól: @minCuringSaltAmount.ToString("F1") - @maxCuringSaltAmount.ToString("F1") [g]</span>
         </div>
@@ -66,7 +78,11 @@
         </div>
 
         <div>
-            <span>Nastrzyk na kg mięsa: @singleInjection.ToString("F1") [ml], łącznie: @totalInjections.ToString("F1") [ml]</span>
+            <span>Nastrzyk na kg mięsa: @singleInjection.ToString("F1") [ml]</span>
+        </div>
+
+        <div>
+            <span>Nastrzyk łącznie: @totalInjections.ToString("F1") [ml]</span>
         </div>
 
         <div>
@@ -76,46 +92,60 @@
 
     @if (!curingAddingInProgress)
     {
-        <button @onclick="switchAddingForm">
+        <div class="w-100 button-container ">
+            <button @onclick="switchAddingForm" class="round-button mt-5">
             Dodaj peklowanie
-        </button>
+            </button>
+        </div>
     }
     
 
     @if (curingAddingInProgress)
     {
-        <div>
-            Podaj ilość dni
-            <input type="text" inputmode="numeric" @bind-value="days">
+        <div class="mt-1">
+            <span class="w-50">Podaj ilość dni</span>
+            <input class="w-50 form-input" type="text" inputmode="numeric" @bind-value="days">
         </div>
 
-        <div>
-            Podaj ilość soli
-            <input type="text" inputmode="numeric" @bind-value="saltAmount">
+        <div class="mt-1">
+            <span class="w-50">Podaj ilość soli</span>
+            <input type="text" inputmode="numeric" @bind-value="saltAmount" class="form-input">
         </div>
 
-        <div>
-            Podaj ilość cukru
-            <input type="text" inputmode="numeric" @bind-value="sugarAmount">
+        <div class="mt-1">
+            <span class="w-50">Podaj ilość cukru</span>
+            <input type="text" inputmode="numeric" @bind-value="sugarAmount" class="w-50 form-input">
         </div>
 
-        <div>
-            Uwagi
-            <input type="text" inputmode="text" @bind-value="comments">
+        <div class="mt-1">
+            <span class="w-25">Uwagi</span>
+            <input type="text" inputmode="text" @bind-value="comments" class="w-75 form-input">
         </div>
 
-        <div>
-            Początek peklowania
-            <InputDate Type="InputDateType.Date" @bind-Value="@startDate" />
+        <div class ="mt-1">
+            <span class="w-50">Początek peklowania</span>
+            <InputDate 
+                style="padding: 5px; border: 1px solid #ccc; border-radius: 4px; background-color: #f8f8f8; font-size: 14px;"
+                class="w-50" 
+                Type="InputDateType.Date" 
+                @bind-Value="@startDate" 
+             />
         </div>
 
-        <button @onclick="addCuring">
-            Zapisz
-        </button>
+        <div class="mt-1" style="display: flex; align-items: center;">
+            <span>Powiadomienie na końcu peklowania</span>
+            <input type="checkbox" @bind-value="@notificationSend" class="notification-checkbox" />
+        </div>
 
-        <button @onclick="cancelAdding">
-            Anuluj
-        </button>
+        <div class="buttons-container mt-4">
+            <button @onclick="addCuring" class="save-button">
+                Zapisz
+            </button>
+
+            <button @onclick="cancelAdding" class="cancel-button">
+                Anuluj
+            </button>
+        </div>
     }
 }
 
@@ -150,6 +180,8 @@
 
     DateTime startDate { get; set; }
 
+    bool notificationSend { get; set; }
+
     // Initialization
     protected override async Task OnInitializedAsync()
     {
@@ -165,6 +197,7 @@
         saltAmount = minCuringSaltAmount;
         sugarAmount = sugarMin;
         comments = string.Empty;
+        notificationSend = true;
     }
 
     async Task addCuring()
@@ -183,6 +216,14 @@
 
         await localDbService.AddCuring(curingToAdd);
         curingAddingInProgress = false;
+
+        // display toast
+        CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+        string text = "Dodano peklowanie";
+        ToastDuration duration = ToastDuration.Short;
+        double fontSize = 14;
+        var toast = Toast.Make(text, duration, fontSize);
+        await toast.Show(cancellationTokenSource.Token);
     }
 
     void cancelAdding()

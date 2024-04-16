@@ -6,3 +6,68 @@
     align-items: flex-start;
     align-content: flex-start;
 }
+
+.form-input {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f8f8f8;
+    font-size: 14px;
+}
+
+.input-select {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 7px;
+    background-color: #f8f8f8;
+    font-size: 14px;
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+}
+
+.round-button {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 10px; /* Makes the button round */
+    background-color: #007bff; /* Button color */
+    color: #fff; /* Text color */
+    font-size: 14px;
+    text-align: center;
+}
+
+.save-button {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 10px; /* Makes the button round */
+    background-color: #40a75f; /* Button color */
+    color: #fff; /* Text color */
+    font-size: 14px;
+    text-align: center;
+}
+
+.cancel-button {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 10px; /* Makes the button round */
+    background-color: #e23232; /* Button color */
+    color: #fff; /* Text color */
+    font-size: 14px;
+    text-align: center;
+}
+
+.buttons-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+.notification-checkbox {
+    border-radius: 4px;
+    width: 20px;
+    height: 20px;
+    background-color: #f8f8f8;
+    margin-left: 10px;
+}
