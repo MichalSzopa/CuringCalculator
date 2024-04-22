@@ -15,11 +15,10 @@
 <div class="mb-2">
     <div class="mb-2">
         Wybierz metodę
-        <InputSelect style="padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 7px;
-    background-color: #f8f8f8;
-    font-size: 14px;" @bind-Value="selectedMethodId">
+        <InputSelect 
+            style="padding: 8px; border: 1px solid #ccc; border-radius: 7px; background-color: #f8f8f8; font-size: 14px;"
+            @bind-Value="selectedMethodId"
+        >
             <option value ="0">Wybierz</option>
             @if ( methods != null)
             {
@@ -35,11 +34,10 @@
     {
         <div class="mb-2">
             Podaj ilość dni
-            <InputSelect style="padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 7px;
-    background-color: #f8f8f8;
-    font-size: 14px;" @bind-Value="selectedDaysIntervalId">
+            <InputSelect 
+                style="padding: 8px; border: 1px solid #ccc; border-radius: 7px; background-color: #f8f8f8; font-size: 14px;"
+                @bind-Value="selectedDaysIntervalId"
+            >
                 <option value="0">Wybierz</option>
                 @if (daysIntervalsForMethod != null)
                 {

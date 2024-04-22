@@ -1,0 +1,163 @@
+﻿@page "/calendar"
+
+@using CuringCalculator.Data
+@using CuringCalculator.Data.Models
+@using CuringCalculator.Shared.Models
+
+@inject LocalDbService localDbService
+
+@using System.Globalization
+
+@if (@curings == null)
+{
+    <h1>Loading...</h1>
+}
+else
+{
+<div>
+    <button @onclick="PreviousMonth">&lt;</button>
+    <span>@CurrentMonth.ToString("MMMM yyyy")</span>
+    <button @onclick="NextMonth">&gt;</button>
+</div>
+<table>
+    <thead>
+        <tr>
+            @foreach (var day in GetDaysOfWeek())
+            {
+                <th>@day</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var week in GetWeeksInMonth(CurrentMonth))
+        {
+            <tr>
+                @foreach (var cell in week)
+                {
+                    <td>
+                        <div class="day-cell">
+                            <span>@(cell.DayNumber > 0 ? cell.DayNumber : "")</span>
+                            @if(cell.Events.Count > 0)
+                            {
+                                @if(cell.Events.Count == 1)
+                                {
+                                    @if(cell.Events.FirstOrDefault().EventType == EventType.Beginning)
+                                    {
+                                        <span style="color:green">■</span>
+                                    }
+                                    else
+                                    {
+                                        <span style="color:red">■</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span style="color:yellow">■</span>
+                                }
+                            }
+                        </div>
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+    </table>
+}
+
+@code {
+
+    List<CuringForListModel> curings { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        curings = await localDbService.GetCuringsForList();
+    }
+
+    private DateTime CurrentMonth = DateTime.Today;
+
+    private void NextMonth()
+    {
+        CurrentMonth = CurrentMonth.AddMonths(1);
+    }
+
+    private void PreviousMonth()
+    {
+        CurrentMonth = CurrentMonth.AddMonths(-1);
+    }
+
+    private IEnumerable<string> GetDaysOfWeek()
+    {
+        return CultureInfo.CurrentCulture.DateTimeFormat.AbbreviatedDayNames;
+    }
+
+    private IEnumerable<IEnumerable<CalendarCell>> GetWeeksInMonth(DateTime month)
+    {
+        var curingsForMonth = curings.Where(c => c.StartDate.Month == month.Month || c.EndDate.Month == month.Month).ToList();
+
+        var weeks = new List<List<CalendarCell>>();
+        var firstDayOfMonth = new DateTime(month.Year, month.Month, 1);
+        var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+        var currentWeek = new List<CalendarCell>();
+
+        // Fill in leading empty cells if the first day of the month is not a Sunday
+        for (var i = 0; i < (int)firstDayOfMonth.DayOfWeek; i++)
+        {
+            currentWeek.Add(new CalendarCell() { DayNumber = 0, IsClicked = false, Events = new List<EventDetails>()});
+        }
+
+        // Fill in the days of the month
+        for (var date = firstDayOfMonth; date <= lastDayOfMonth; date = date.AddDays(1))
+        {
+            var curingsForDay = curingsForMonth.Where(c => c.StartDate.Day == date.Day || c.EndDate.Day == date.Day).ToList();
+            List<EventDetails>? events = new List<EventDetails>();
+            foreach(var curing in curingsForDay)
+            {
+                events.Add(new EventDetails()
+                {
+                    StartDate = curing.StartDate,
+                    EndDate = curing.EndDate,
+                    MethodName = curing.MethodName,
+                    CuringId = curing.Id,
+                    EventType = curing.StartDate.Day == date.Day ? EventType.Beginning : EventType.Ending
+                });
+            }
+
+            currentWeek.Add(new CalendarCell() {DayNumber = date.Day, IsClicked = false, Events = events});
+            if (date.DayOfWeek == DayOfWeek.Saturday || date == lastDayOfMonth)
+            {
+                weeks.Add(currentWeek);
+                currentWeek = new List<CalendarCell>();
+            }
+        }
+
+        return weeks;
+    }
+
+    class CalendarCell
+    {
+        public int DayNumber { get; set; }
+
+        public bool IsClicked { get; set; }
+
+        public List<EventDetails>? Events { get; set; }
+    }
+
+    class EventDetails
+    {
+        public EventType EventType { get; set; }
+
+        public DateTime StartDate { get; set; }
+
+        public DateTime EndDate { get; set; }
+
+        public string MethodName { get; set; }
+
+        public int CuringId { get; set; }
+    }
+
+    enum EventType
+    {
+        Beginning,
+        Ending
+    }
+}
