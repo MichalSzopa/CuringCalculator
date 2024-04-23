@@ -14,63 +14,132 @@
 }
 else
 {
-<div>
-    <button @onclick="PreviousMonth">&lt;</button>
-    <span>@CurrentMonth.ToString("MMMM yyyy")</span>
-    <button @onclick="NextMonth">&gt;</button>
-</div>
-<table>
-    <thead>
-        <tr>
-            @foreach (var day in GetDaysOfWeek())
-            {
-                <th>@day</th>
-            }
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var week in GetWeeksInMonth(CurrentMonth))
-        {
+    <div>
+        <button @onclick="PreviousMonth">&lt;</button>
+        <span>@CurrentMonth.ToString("MMMM yyyy")</span>
+        <button @onclick="NextMonth">&gt;</button>
+    </div>
+    <table>
+        <thead>
             <tr>
-                @foreach (var cell in week)
+                @foreach (var day in GetDaysOfWeek())
                 {
-                    <td>
-                        <div class="day-cell">
-                            <span>@(cell.DayNumber > 0 ? cell.DayNumber : "")</span>
-                            @if(cell.Events.Count > 0)
-                            {
-                                @if(cell.Events.Count == 1)
-                                {
-                                    @if(cell.Events.FirstOrDefault().EventType == EventType.Beginning)
-                                    {
-                                        <span style="color:green">■</span>
-                                    }
-                                    else
-                                    {
-                                        <span style="color:red">■</span>
-                                    }
-                                }
-                                else
-                                {
-                                    <span style="color:yellow">■</span>
-                                }
-                            }
-                        </div>
-                    </td>
+                    <th>@day</th>
                 }
             </tr>
-        }
-    </tbody>
+        </thead>
+        <tbody>
+            @foreach (var week in month.Weeks)
+            {
+                <tr>
+                    @foreach (var cell in week)
+                    {
+                        @if(!cell.IsClicked)
+                        {
+                            <td>
+                                <div class="day-cell" @onclick="@(e => month.CellClicked(cell.DayNumber))">
+                                    <span>@(cell.DayNumber > 0 ? cell.DayNumber : "")</span>
+                                    @if (cell.Events.Count > 0)
+                                    {
+                                        @if (cell.Events.Count < 4)
+                                        {
+                                            <div>
+                                                @foreach (var evencior in cell.Events)
+                                                {
+                                                    @if (cell.Events.FirstOrDefault().EventType == EventType.Beginning)
+                                                    {
+                                                        <span style="color:green">■</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span style="color:red">■</span>
+                                                    }
+                                                }
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span>4+</span>
+                                        }
+                                    }
+                                </div>
+                            </td>
+                        }
+                        else
+                        {
+                            <td style="background-color:dodgerblue">
+                                <div class="day-cell" @onclick="@(e => month.CellClicked(cell.DayNumber))">
+                                    <span>@(cell.DayNumber > 0 ? cell.DayNumber : "")</span>
+                                    @if (cell.Events.Count > 0)
+                                    {
+                                        @if (cell.Events.Count < 4)
+                                        {
+                                            <div>
+                                                @foreach (var evencior in cell.Events)
+                                                {
+                                                    @if (cell.Events.FirstOrDefault().EventType == EventType.Beginning)
+                                                    {
+                                                        <span style="color:green">■</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span style="color:red">■</span>
+                                                    }
+                                                }
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span>4+</span>
+                                        }
+                                    }
+                                </div>
+                            </td>
+                        }
+                        
+                    }
+                </tr>
+            }
+        </tbody>
     </table>
+
+    @if (month.GetSelectedCell != null && month.GetSelectedCell.Events.Count > 0)
+    {
+        <table class="mt-5">
+            <thead>
+                <tr>
+                    <td>Metoda</td>
+                    <td>Mięso</td>
+                    <td>Początek</td>
+                    <td>Koniec</td>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach(var monthEvent in month.GetSelectedCell.Events)
+                {
+                    <tr>
+                        <td>@monthEvent.Curing.MethodName</td>
+                        <td>@monthEvent.Curing.MeatAmount</td>
+                        <td>@monthEvent.Curing.StartDate.ToShortDateString()</td>
+                        <td>@monthEvent.Curing.EndDate.ToShortDateString()</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
 }
 
 @code {
 
     List<CuringForListModel> curings { get; set; }
+    Month month { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         curings = await localDbService.GetCuringsForList();
+        CurrentMonth = DateTime.Today;
+        month = new();
+        month.Weeks = GetWeeksInMonth(CurrentMonth);
     }
 
     private DateTime CurrentMonth = DateTime.Today;
@@ -90,7 +159,7 @@ else
         return CultureInfo.CurrentCulture.DateTimeFormat.AbbreviatedDayNames;
     }
 
-    private IEnumerable<IEnumerable<CalendarCell>> GetWeeksInMonth(DateTime month)
+    private List<List<CalendarCell>> GetWeeksInMonth(DateTime month)
     {
         var curingsForMonth = curings.Where(c => c.StartDate.Month == month.Month || c.EndDate.Month == month.Month).ToList();
 
@@ -102,7 +171,7 @@ else
         // Fill in leading empty cells if the first day of the month is not a Sunday
         for (var i = 0; i < (int)firstDayOfMonth.DayOfWeek; i++)
         {
-            currentWeek.Add(new CalendarCell() { DayNumber = 0, IsClicked = false, Events = new List<EventDetails>()});
+            currentWeek.Add(new CalendarCell(0, new List<EventDetails>()));
         }
 
         // Fill in the days of the month
@@ -110,19 +179,16 @@ else
         {
             var curingsForDay = curingsForMonth.Where(c => c.StartDate.Day == date.Day || c.EndDate.Day == date.Day).ToList();
             List<EventDetails>? events = new List<EventDetails>();
-            foreach(var curing in curingsForDay)
+            foreach (var curing in curingsForDay)
             {
                 events.Add(new EventDetails()
-                {
-                    StartDate = curing.StartDate,
-                    EndDate = curing.EndDate,
-                    MethodName = curing.MethodName,
-                    CuringId = curing.Id,
-                    EventType = curing.StartDate.Day == date.Day ? EventType.Beginning : EventType.Ending
-                });
+                    {
+                        Curing = curing,
+                        EventType = curing.StartDate.Day == date.Day ? EventType.Beginning : EventType.Ending
+                    });
             }
 
-            currentWeek.Add(new CalendarCell() {DayNumber = date.Day, IsClicked = false, Events = events});
+            currentWeek.Add(new CalendarCell(date.Day, events));
             if (date.DayOfWeek == DayOfWeek.Saturday || date == lastDayOfMonth)
             {
                 weeks.Add(currentWeek);
@@ -133,26 +199,53 @@ else
         return weeks;
     }
 
+    class Month
+    {
+        public IEnumerable<IEnumerable<CalendarCell>> Weeks { get; set; }
+
+        public CalendarCell? GetSelectedCell { get; set; }
+
+        public void CellClicked(int dayNumber)
+        {
+            foreach(var week in Weeks)
+            {
+                foreach(var day in week)
+                {
+                    if(day.DayNumber == dayNumber)
+                    {
+                        day.IsClicked = true;
+                        GetSelectedCell = day;
+                    }
+                    else
+                    {
+                        day.IsClicked = false;
+                    }
+                }
+            }
+        }
+    }
+
     class CalendarCell
     {
-        public int DayNumber { get; set; }
+        public int DayNumber { get; }
 
         public bool IsClicked { get; set; }
 
-        public List<EventDetails>? Events { get; set; }
+        public List<EventDetails> Events { get; }
+
+        public CalendarCell(int dayNumber, List<EventDetails> events)
+        {
+            DayNumber = dayNumber;
+            Events = events;
+            IsClicked = false;
+        }
     }
 
     class EventDetails
     {
         public EventType EventType { get; set; }
 
-        public DateTime StartDate { get; set; }
-
-        public DateTime EndDate { get; set; }
-
-        public string MethodName { get; set; }
-
-        public int CuringId { get; set; }
+        public CuringForListModel Curing { get; set; }
     }
 
     enum EventType
