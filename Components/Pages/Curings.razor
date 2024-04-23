@@ -27,7 +27,7 @@
                     <td>@curing.StartDate.ToShortDateString()</td>
                     <td>@curing.EndDate.ToShortDateString()</td>
                 </tr>
-                if (curing.IsRowExpanded)
+                @if (curing.IsRowExpanded)
                 {
                     <tr>
                         <td colspan="3">

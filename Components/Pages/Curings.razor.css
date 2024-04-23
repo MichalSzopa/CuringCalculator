@@ -9,3 +9,7 @@
     flex-direction: column;
     width: 50%;
 }
+
+tr:nth-child(even) {
+    background-color: #e5e9e9;
+}

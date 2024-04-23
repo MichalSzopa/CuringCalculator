@@ -103,7 +103,7 @@ else
         </tbody>
     </table>
 
-    @if (month.GetSelectedCell != null && month.GetSelectedCell.Events.Count > 0)
+    @if (month.SelectedCell != null && month.SelectedCell.Events.Count > 0)
     {
         <table class="mt-5">
             <thead>
@@ -115,14 +115,31 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach(var monthEvent in month.GetSelectedCell.Events)
+                @foreach(var monthEvent in month.SelectedCell.Events)
                 {
-                    <tr>
-                        <td>@monthEvent.Curing.MethodName</td>
-                        <td>@monthEvent.Curing.MeatAmount</td>
-                        <td>@monthEvent.Curing.StartDate.ToShortDateString()</td>
-                        <td>@monthEvent.Curing.EndDate.ToShortDateString()</td>
+                    <tr @onclick="() => monthEvent.Curing.IsRowExpanded = !monthEvent.Curing.IsRowExpanded">
+                        <td style="width: 18%">@monthEvent.Curing.MethodName</td>
+                        <td style="width: 18%">@monthEvent.Curing.MeatAmount [kg]</td>
+                        <td style="width: 23%">@monthEvent.Curing.StartDate.ToShortDateString()</td>
+                        <td style="width: 23%">@monthEvent.Curing.EndDate.ToShortDateString()</td>
                     </tr>
+                    @if (monthEvent.Curing.IsRowExpanded)
+                    {
+                        <tr>
+                            <td colspan="4">
+                                <div class="additional-data-container w-100">
+                                    <div class="additional-data-column">
+                                        <span>Sól: @monthEvent.Curing.SaltAmount [g] </span>
+                                        <span>Cukier: @monthEvent.Curing.SugarAmount [g] </span>
+                                    </div>
+                                    <div class="additional-data-column">
+                                        <span>Dni: @monthEvent.Curing.Days </span>
+                                    </div>
+                                </div>
+                                <span>Uwagi: @monthEvent.Curing.Comments </span>
+                            </td>
+                        </tr>
+                    }
                 }
             </tbody>
         </table>
@@ -147,11 +164,15 @@ else
     private void NextMonth()
     {
         CurrentMonth = CurrentMonth.AddMonths(1);
+        month.Weeks = GetWeeksInMonth(CurrentMonth);
+        month.SelectedCell = null;
     }
 
     private void PreviousMonth()
     {
         CurrentMonth = CurrentMonth.AddMonths(-1);
+        month.Weeks = GetWeeksInMonth(CurrentMonth);
+        month.SelectedCell = null;
     }
 
     private IEnumerable<string> GetDaysOfWeek()
@@ -161,7 +182,7 @@ else
 
     private List<List<CalendarCell>> GetWeeksInMonth(DateTime month)
     {
-        var curingsForMonth = curings.Where(c => c.StartDate.Month == month.Month || c.EndDate.Month == month.Month).ToList();
+        var curingsForMonth = curings.Where(c => (c.StartDate.Month == month.Month && c.StartDate.Year == month.Year) || (c.EndDate.Month == month.Month && c.StartDate.Year == month.Year)).ToList();
 
         var weeks = new List<List<CalendarCell>>();
         var firstDayOfMonth = new DateTime(month.Year, month.Month, 1);
@@ -203,7 +224,7 @@ else
     {
         public IEnumerable<IEnumerable<CalendarCell>> Weeks { get; set; }
 
-        public CalendarCell? GetSelectedCell { get; set; }
+        public CalendarCell? SelectedCell { get; set; }
 
         public void CellClicked(int dayNumber)
         {
@@ -214,7 +235,7 @@ else
                     if(day.DayNumber == dayNumber)
                     {
                         day.IsClicked = true;
-                        GetSelectedCell = day;
+                        SelectedCell = day;
                     }
                     else
                     {
