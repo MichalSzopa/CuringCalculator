@@ -94,4 +94,10 @@ public class LocalDbService
 
         await connection.InsertAsync(curingToAdd);
     }
+
+    public async Task RemoveCuring(int curingId)
+    {
+        var curing = await connection.Table<Curing>().Where(c => c.Id == curingId).FirstOrDefaultAsync();
+        await connection.DeleteAsync(curing);
+    }
 }

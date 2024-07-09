@@ -13,3 +13,13 @@
 tr:nth-child(even) {
     background-color: #e5e9e9;
 }
+
+.cancel-button {
+    display: inline-block;
+    padding: 5px 8px;
+    border-radius: 10px; /* Makes the button round */
+    background-color: #e23232; /* Button color */
+    color: #fff; /* Text color */
+    font-size: 14px;
+    text-align: center;
+}

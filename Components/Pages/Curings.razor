@@ -38,10 +38,15 @@
                                 </div>
                                 <div class="additional-data-column">
                                     <span>Cukier: @curing.SugarAmount [g] </span>
-                                    <span >Dni: @curing.Days </span>
+                                    <span>Dni: @curing.Days </span>
                                 </div>
                             </div>
-                            <span>Uwagi: @curing.Comments </span>
+                            <span style="display:block">Uwagi: @curing.Comments </span>
+                            <button 
+                                style="display:block" 
+                                class="cancel-button"
+                                @onclick="@(e => removeCuring(curing.Id))"
+                            > Usuń </button>
                         </td>
                     </tr>
                 }
@@ -55,6 +60,12 @@
 
     protected override async Task OnInitializedAsync()
     {
+        curings = await localDbService.GetCuringsForList();
+    }
+
+    async Task removeCuring(int curingId)
+    {
+        await localDbService.RemoveCuring(curingId);
         curings = await localDbService.GetCuringsForList();
     }
 }
