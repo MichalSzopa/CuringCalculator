@@ -14,10 +14,10 @@
 }
 else
 {
-    <div>
-        <button @onclick="PreviousMonth">&lt;</button>
-        <span>@CurrentMonth.ToString("MMMM yyyy")</span>
-        <button @onclick="NextMonth">&gt;</button>
+    <div class="calendar-navigation">
+            <button @onclick="PreviousMonth" class="navigation-button">&lt;</button>
+            <span>@CurrentMonth.ToString("MMMM yyyy")</span>
+            <button @onclick="NextMonth" class="navigation-button">&gt;</button>
     </div>
     <table>
         <thead>
