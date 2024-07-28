@@ -14,13 +14,14 @@ tr:nth-child(even) {
 
 .calendar-navigation {
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     align-items: center;
 }
 
 .navigation-button {
     background-color: dodgerblue;
-    margin: 10px;
+    margin-left: 30px;
+    margin-right: 30px;
     display: inline-block;
     padding: 8px 20px;
     border-radius: 10px;

@@ -13,7 +13,7 @@
 <h1>Kalkulator</h1>
 
 <div class="mb-2">
-    <div class="mb-2">
+    @* <div class="mb-2">
         Wybierz metodę
         <InputSelect 
             style="padding: 8px; border: 1px solid #ccc; border-radius: 7px; background-color: #f8f8f8; font-size: 14px;"
@@ -28,10 +28,10 @@
                 }
             }
         </InputSelect>
-    </div>
+    </div> *@
 
-    @if (selectedMethod != null)
-    {
+    @* @if (selectedMethod != null)
+    { *@
         <div class="mb-2">
             Podaj ilość dni
             <InputSelect 
@@ -56,11 +56,11 @@
                 <input style="width: 50%" type="text" inputmode="numeric" @bind-value="meatAmount" class="form-input">
             </div>
         }
-    }
+    @* } *@
 
 </div>
 
-@if (selectedMethod != null && selectedInterval != null && meatAmount > 0)
+@if (@* selectedMethod != null &&  *@selectedInterval != null && meatAmount > 0)
 {
     <div class="form mt-1">
         <div>
@@ -184,6 +184,7 @@
     protected override async Task OnInitializedAsync()
     {
         methods = await localDbService.GetMethods();
+        selectedMethodId = methods.FirstOrDefault().Id;
         daysIntervals = await localDbService.GetIntervals();
     }
 
