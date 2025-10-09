@@ -4,7 +4,7 @@ Dostępne są wcześniej zdefiniowane w systemie konfiguracje peklowania.
 Użytkownik ma możliwość dodania własnych przeliczników dodawanych składników, a także uwag dla konkretnych nastawionych wędlin.
 Dla użytkownika dostępny jest kalendarz z widocznymi wydarzeniami jak nastawienie wędlin, zakończenie peklowania.
 Aplikacja wysyła powiadomienie o zbliżającym się końcu procesu peklowania.
-Aplikacja dostępna w formie aplikacji webowej oraz aplikacji mobilnej.
+Aplikacja dostępna w formie aplikacji mobilnej.
 
 Aplikacja stworzona w .NET MAUI z Blazorem
 
@@ -14,6 +14,11 @@ Curing configurations previously defined in the system are available.
 The user can add their own conversion factors for added ingredients, as well as comments for specific cold cuts.
 The user is provided with a calendar with visible events such as preparing meats and the end of curing.
 The application sends a notification about the approaching end of the curing process.
-The application is available as a web application and a mobile application.
+The application is available as a mobile application.
 
 Application created in .NET MAUI with Blazor
+
+todo:
+styling
+notifications
+more features when they are invented
